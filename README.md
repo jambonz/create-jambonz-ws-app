@@ -10,7 +10,7 @@ Options:
 
 The following scenarios are available:
 - hello-world: a simple app that responds to an incoming call using text-to-speech,
-- echo: an collect-and-response app that echos caller voice input,
+- echo: an collect-and-response app that echoes caller voice input,
 - chat-gpt3: a voicebot that interacts with openai's gpt-3 api (requires openai api key),
 - all: generate all of the above scenarios
 

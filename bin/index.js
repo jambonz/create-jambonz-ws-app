@@ -41,7 +41,7 @@ Scenarios available:
 - all: generate all of the above scenarios
 
 Example:
-  $ npx create-jambonz-ws-app --scenarios "hello-world, echo" my-app`)
+  $ npx create-jambonz-ws-app --scenario "hello-world, echo" my-app`)
   .option('-s, --scenario <scenario>',
     'generates a sample websocket app for jambonz', 'hello-world');
 
