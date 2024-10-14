@@ -24,7 +24,7 @@ const baseFiles = [
 const pluginFiles = {
   'hello-world': ['hello-world.js'],
   echo: ['echo.js'],
-  'chat-gpt3': ['chat-gpt3.js']
+  'voice-ai': ['openai-s2s.js']
 };
 
 const pkg = require(`${__dirname}/../package.json`);
@@ -37,7 +37,7 @@ program
 Scenarios available: 
 - hello-world: a simple app that responds to an incoming call using text-to-speech
 - echo: an collect-and-response app that echos caller voice input
-- chat-gpt3: a voicebot that interacts with openai's gpt-3 api (requires an openai api key)
+- voice-ai: a conversational voice interface to the OpenAI Realtime API
 - all: generate all of the above scenarios
 
 Example:
@@ -96,7 +96,7 @@ const renderFolder = (folder, target) => {
           appName,
           tts: opts.scenario.includes('hello-world') || includeAll,
           echo: opts.scenario.includes('echo') || includeAll,
-          chatgpt3: opts.scenario.includes('chat-gpt3') || includeAll
+          openai: opts.scenario.includes('voice-ai') || includeAll
         }));
       }
     }
@@ -135,8 +135,8 @@ const spawnCommand = (cmd, args) => {
   renderFolder(`${__dirname}/../templates`, process.cwd());
   const packages = ['@jambonz/node-client-ws', 'pino'];
   const devPackages = ['eslint-plugin-promise', 'eslint'];
-  if (opts.scenario.includes('chat-gpt3') || includeAll) {
-    Array.prototype.push.apply(packages, ['bent']);
+  if (opts.scenario.includes('voice-ai') || includeAll) {
+    Array.prototype.push.apply(packages, ['axios']);
   }
 
   console.log('Installing packages...');

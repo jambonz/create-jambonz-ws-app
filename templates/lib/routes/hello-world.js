@@ -13,16 +13,21 @@ const service = ({logger, makeService}) => {
     session.locals = {logger: logger.child({call_sid: session.call_sid})};
     logger.info({session}, `new incoming call: ${session.call_sid}`);
 
-    session
-      .on('close', onClose.bind(null, session))
-      .on('error', onError.bind(null, session));
+    try {
+      session
+        .on('close', onClose.bind(null, session))
+        .on('error', onError.bind(null, session));
 
-    session
-      .pause({length: 1.5})
-      .say({text})
-      .pause({length: 0.5})
-      .hangup()
-      .send();
+      session
+        .pause({length: 1.5})
+        .say({text})
+        .pause({length: 0.5})
+        .hangup()
+        .send();
+    } catch (err) {
+      session.locals.logger.info({err}, `Error to responding to incoming call: ${session.call_sid}`);
+      session.close();
+    }
   });
 };
 

@@ -5,8 +5,8 @@ module.exports = ({logger, makeService}) => {
   {% if echo %}
   require('./echo')({logger, makeService});
   {% endif %}
-  {% if chatgpt3 %}
-  require('./chat-gpt3')({logger, makeService});
+  {% if openai %}
+  require('./openai-s2s')({logger, makeService});
   {% endif %}
 };
 

@@ -5,21 +5,26 @@ const service = ({logger, makeService}) => {
     session.locals = {logger: logger.child({call_sid: session.call_sid})};
     logger.info({session}, `new incoming call: ${session.call_sid}`);
 
-    session
-      .on('close', onClose.bind(null, session))
-      .on('error', onError.bind(null, session))
-      .on('/echo', onSpeechEvent.bind(null, session));
+    try {
+      session
+        .on('close', onClose.bind(null, session))
+        .on('error', onError.bind(null, session))
+        .on('/echo', onSpeechEvent.bind(null, session));
 
-    session
-      .pause({length: 1.5})
-      .gather({
-        say: {text: 'Please say something and we will echo it back to you.'},
-        input: ['speech'],
-        actionHook: '/echo',
-        partialResultHook: '/interimTranscript',
-        timeout: 15
-      })
-      .send();
+      session
+        .pause({length: 1.5})
+        .gather({
+          say: {text: 'Please say something and we will echo it back to you.'},
+          input: ['speech'],
+          actionHook: '/echo',
+          partialResultHook: '/interimTranscript',
+          timeout: 15
+        })
+        .send();
+    } catch (err) {
+      session.locals.logger.info({err}, `Error to responding to incoming call: ${session.call_sid}`);
+      session.close();
+    }
   });
 };
 
