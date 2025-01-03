@@ -1,10 +1,10 @@
 const assert = require('assert');
 const axios = require('axios');
 
-assert(process.env.OPENAI_API_KEY, 'OPENAI_API_KEY env variable is missing');
+assert(process.env.DEEPGRAM_API_KEY, 'DEEPGRAM_API_KEY env variable is missing');
 
 const service = ({logger, makeService}) => {
-  const svc = makeService({path: '/openai-s2s'});
+  const svc = makeService({path: '/deepgram-s2s'});
 
   svc.on('session:new', (session, path) => {
     session.locals = { ...session.locals,
@@ -13,7 +13,7 @@ const service = ({logger, makeService}) => {
     };
     session.locals.logger.info({session, path}, `new incoming call: ${session.call_sid}`);
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.DEEPGRAM_API_KEY;
     session
       .on('/event', onEvent.bind(null, session))
       .on('/toolCall', onToolCall.bind(null, session))
@@ -24,9 +24,10 @@ const service = ({logger, makeService}) => {
     session
       .answer()
       .pause({length: 1})
+      .say({text: 'Hello, how can I help you today?'})
       .llm({
-        vendor: 'openai',
-        model: 'gpt-4o-realtime-preview-2024-12-17',
+        vendor: 'deepgram',
+        model: 'voice-agent',
         auth: {
           apiKey
         },
@@ -34,50 +35,42 @@ const service = ({logger, makeService}) => {
         eventHook: '/event',
         toolHook: '/toolCall',
         events: [
-          'conversation.item.*',
-          'response.audio_transcript.done',
-          'input_audio_buffer.committed'
+          'all',
         ],
         llmOptions: {
-          response_create: {
-            modalities: ['text', 'audio'],
-            instructions: 'Please assist the user with their request.',
-            voice: 'alloy',
-            output_audio_format: 'pcm16',
-            temperature: 0.8,
-            max_output_tokens: 4096,
-          },
-          session_update: {
-            tools: [
-              {
-                name: 'get_weather',
-                type: 'function',
-                description: 'Get the weather at a given location',
-                parameters: {
-                  type: 'object',
-                  properties: {
-                    location: {
-                      type: 'string',
-                      description: 'Location to get the weather from',
-                    },
-                    scale: {
-                      type: 'string',
-                      enum: ['fahrenheit', 'celsius'],
+          settingsConfiguration: {
+            type: 'SettingsConfiguration',
+            agent: {
+              listen: {
+                model: 'nova-2'
+              },
+              think: {
+                model: 'gpt-4o-mini',
+                provider: {
+                  type: 'open_ai'
+                },
+                instructions: 'Please help the user with their request.',
+                functions: [
+                  {
+                    name: 'get_weather',
+                    description: 'Get the weather at a given location',
+                    parameters: {
+                      type: 'object',
+                      properties: {
+                        location: {
+                          type: 'string',
+                          description: 'Location to get the weather from',
+                        },
+                        scale: {
+                          type: 'string',
+                          enum: ['fahrenheit', 'celsius'],
+                        },
+                      },
+                      required: ['location', 'scale'],
                     },
                   },
-                  required: ['location', 'scale'],
-                },
-              },
-            ],
-            tool_choice: 'auto',
-            input_audio_transcription: {
-              model: 'whisper-1',
-            },
-            turn_detection: {
-              type: 'server_vad',
-              threshold: 0.8,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 500,
+                ]
+              }
             }
           }
         }
@@ -143,12 +136,9 @@ const onToolCall = async(session, evt) => {
     logger.info({weather}, 'got response from weather API');
 
     const data = {
-      type: 'conversation.item.create',
-      item: {
-        type: 'function_call_output',
-        call_id: tool_call_id,
-        output: weather,
-      }
+      type: 'FunctionCallResponse',
+      function_call_id: tool_call_id,
+      output: weather
     };
 
     session.sendToolOutput(tool_call_id, data);

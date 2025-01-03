@@ -9,7 +9,9 @@ const chalk = require('chalk');
 const scenarios = [
   'hello-world',
   'echo',
-  'chat-gpt3',
+  'openai-realtime',
+  'deepgram-voice-agent',
+  'llm-streaming',
   'all'
 ];
 const baseFiles = [
@@ -24,7 +26,9 @@ const baseFiles = [
 const pluginFiles = {
   'hello-world': ['hello-world.js'],
   echo: ['echo.js'],
-  'voice-ai': ['openai-s2s.js']
+  'openai-realtime': ['openai-s2s.js'],
+  'deepgram-voice-agent': ['deepgram-s2s.js'],
+  'llm-streaming': ['llm-streaming.js']
 };
 
 const pkg = require(`${__dirname}/../package.json`);
@@ -37,7 +41,9 @@ program
 Scenarios available: 
 - hello-world: a simple app that responds to an incoming call using text-to-speech
 - echo: an collect-and-response app that echos caller voice input
-- voice-ai: a conversational voice interface to the OpenAI Realtime API
+- openai-realtime: a conversational voice interface to the OpenAI Realtime API
+- deepgram-voice-agent: a conversational voice interface to the Deepgram Voice Agent API
+- llm-streaming: example of streaming text tokens from Anthropic LLM
 - all: generate all of the above scenarios
 
 Example:
@@ -96,7 +102,9 @@ const renderFolder = (folder, target) => {
           appName,
           tts: opts.scenario.includes('hello-world') || includeAll,
           echo: opts.scenario.includes('echo') || includeAll,
-          openai: opts.scenario.includes('voice-ai') || includeAll
+          openai: opts.scenario.includes('openai-realtime') || includeAll,
+          deepgram: opts.scenario.includes('deepgram-voice-agent') || includeAll,
+          streaming: opts.scenario.includes('llm-streaming') || includeAll
         }));
       }
     }
@@ -135,8 +143,11 @@ const spawnCommand = (cmd, args) => {
   renderFolder(`${__dirname}/../templates`, process.cwd());
   const packages = ['@jambonz/node-client-ws', 'pino'];
   const devPackages = ['eslint-plugin-promise', 'eslint'];
-  if (opts.scenario.includes('voice-ai') || includeAll) {
+  if (opts.scenario.includes('openai-realtime') || includeAll) {
     Array.prototype.push.apply(packages, ['axios']);
+  }
+  if (opts.scenario.includes('llm-streaming') || includeAll) {
+    Array.prototype.push.apply(packages, ['@anthropic-ai/sdk']);
   }
 
   console.log('Installing packages...');

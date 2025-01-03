@@ -8,5 +8,11 @@ module.exports = ({logger, makeService}) => {
   {% if openai %}
   require('./openai-s2s')({logger, makeService});
   {% endif %}
+  {% if deepgram %}
+  require('./deepgram-s2s')({logger, makeService});
+  {% endif %}
+  {% if streaming %}
+  require('./llm-streaming')({logger, makeService});
+  {% endif %}
 };
 
