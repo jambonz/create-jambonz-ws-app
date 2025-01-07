@@ -143,7 +143,7 @@ const spawnCommand = (cmd, args) => {
   renderFolder(`${__dirname}/../templates`, process.cwd());
   const packages = ['@jambonz/node-client-ws', 'pino'];
   const devPackages = ['eslint-plugin-promise', 'eslint'];
-  if (opts.scenario.includes('openai-realtime') || includeAll) {
+  if (opts.scenario.includes('openai-realtime' || 'deepgram-voice-agent') || includeAll) {
     Array.prototype.push.apply(packages, ['axios']);
   }
   if (opts.scenario.includes('llm-streaming') || includeAll) {
