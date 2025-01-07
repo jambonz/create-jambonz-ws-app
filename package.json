@@ -8,9 +8,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/drachtio/create-drachtio-app"
+    "url": "https://github.com/jambonz/create-jambonz-ws-app"
   },
-  "readme": "https://github.com/drachtio/create-drachtio-app/blob/main/README.md",
+  "readme": "https://github.com/jambonz/create-jambonz-ws-app/blob/main/README.md",
   "scripts": {
     "start": "node bin/index.js",
     "jslint": "eslint bin/index.js"
