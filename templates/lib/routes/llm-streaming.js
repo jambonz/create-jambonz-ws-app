@@ -1,20 +1,34 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const assert = require('assert');
+{% if not enableEnv %}
 const ANTHROPIC_MODEL = 'claude-3-5-haiku-latest';
 const systemPrompt = `You are a helpful conversational AI voice bot.
 Please keep your answers short and to the point; the user will follow up with more questions if needed.
 Please reply with unadorned text that can be read aloud to the user using a TTS engine`;
-
 assert(process.env.ANTHROPIC_API_KEY, 'ANTHROPIC_API_KEY is required');
+{% endif %}
 
 const service = ({logger, makeService}) => {
   const svc = makeService({path: '/llm-streaming'});
+  {% if enableEnv %}
+  const schema = require('../../app.json');
+  {% endif %}
 
   svc.on('session:new', (session) => {
-
+    {% if enableEnv %}
+    const env = mergeEnvVarsWithDefaults(session.env_vars, svc.path, schema);
+    {% endif %}
     session.locals = {
       logger: logger.child({call_sid: session.call_sid}),
-      client: new Anthropic({ system: systemPrompt }),
+      client: new Anthropic({
+        {% if enableEnv %}
+        system: env.systemPrompt,
+        apiKey: env.anthropicApiKey,
+        {% else %}
+        system: systemPrompt,
+        apiKey: process.env.ANTHROPIC_API_KEY,
+        {% endif %}
+      }),
       messages: [],
       assistantResponse: ''
     };
@@ -68,7 +82,7 @@ const onSpeechDetected = async(session, event) => {
     logger.info({messages:session.locals.messages}, `session ${session.call_sid} making request to Anthropic`);
 
     const stream = await client.messages.create({
-      model: ANTHROPIC_MODEL,
+      model: {% if enableEnv %}env.anthropicModel{% else %}ANTHROPIC_MODEL{% endif %},
       max_tokens: 1024,
       messages: session.locals.messages,
       stream: true

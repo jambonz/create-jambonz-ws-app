@@ -1,19 +1,26 @@
 const assert = require('assert');
 const axios = require('axios');
-
+{% if not enableEnv %}
 assert(process.env.OPENAI_API_KEY, 'OPENAI_API_KEY env variable is missing');
+{% endif %}
 
 const service = ({logger, makeService}) => {
   const svc = makeService({path: '/openai-s2s'});
+  {% if enableEnv %}
+  const schema = require('../../app.json');
+  {% endif %}
 
   svc.on('session:new', (session, path) => {
+    {% if enableEnv %}
+    const env = mergeEnvVarsWithDefaults(session.env_vars, svc.path, schema);
+    {% endif %}
     session.locals = { ...session.locals,
       transcripts: [],
       logger: logger.child({call_sid: session.call_sid})
     };
     session.locals.logger.info({session, path}, `new incoming call: ${session.call_sid}`);
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = {% if enableEnv %}env.openaiApiKey{% else %} process.env.OPENAI_API_KEY{% endif %};
     session
       .on('/event', onEvent.bind(null, session))
       .on('/toolCall', onToolCall.bind(null, session))
@@ -26,7 +33,7 @@ const service = ({logger, makeService}) => {
       .pause({length: 1})
       .llm({
         vendor: 'openai',
-        model: 'gpt-4o-realtime-preview-2024-12-17',
+        model: {% if enableEnv %}env.openaiModel{% else %}'gpt-4o-realtime-preview-2024-12-17'{% endif %},
         auth: {
           apiKey
         },

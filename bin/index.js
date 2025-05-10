@@ -46,10 +46,15 @@ Scenarios available:
 - llm-streaming: example of streaming text tokens from Anthropic LLM
 - all: generate all of the above scenarios
 
+Options:
+  --enable-env    Enable environment variable support in the generated app (experimental)
+
 Example:
   $ npx create-jambonz-ws-app --scenario "hello-world, echo" my-app`)
   .option('-s, --scenario <scenario>',
-    'generates a sample websocket app for jambonz', 'hello-world');
+    'generates a sample websocket app for jambonz', 'hello-world')
+  .option('-e, --enable-env', 'Enable environment variable support in the generated app', false);
+
 
 program.parse();
 const opts = program.opts();
@@ -85,6 +90,7 @@ nunjucks.configure(`${__dirname}/../templates`, {
 const shouldRender = (template) => {
   if (baseFiles.includes(template)) return true;
   const baseName = path.basename(template);
+  if (template === 'app.json' || template === 'options-handler.js') return opts.enableEnv;
   for (const prop in pluginFiles) {
     if ((opts.scenario.includes(prop) || includeAll) &&
       pluginFiles[prop].includes(baseName)) return true;
@@ -95,7 +101,7 @@ const shouldRender = (template) => {
 const renderFolder = (folder, target) => {
   const entries = fs.readdirSync(folder, {withFileTypes: true});
   for (const entry of entries) {
-    //console.log(`rendering ${entry.name}`);
+    //console.log(`rendering ${entry.name} in target ${target}`);
     if (entry.isFile()) {
       if (shouldRender(entry.name)) {
         fs.writeFileSync(`${target}/${entry.name}`, nunjucks.render(`${folder}/${entry.name}`, {
@@ -104,11 +110,14 @@ const renderFolder = (folder, target) => {
           echo: opts.scenario.includes('echo') || includeAll,
           openai: opts.scenario.includes('openai-realtime') || includeAll,
           deepgram: opts.scenario.includes('deepgram-voice-agent') || includeAll,
-          streaming: opts.scenario.includes('llm-streaming') || includeAll
+          streaming: opts.scenario.includes('llm-streaming') || includeAll,
+          enableEnv: opts.enableEnv
         }));
       }
     }
     else if (entry.isDirectory()) {
+      if (entry.name === 'env-vars' && !opts.enableEnv) continue;
+      //console.log(`creating directory ${target}/${entry.name}`);
       fs.mkdirSync(`${target}/${entry.name}`);
       renderFolder(`${folder}/${entry.name}`, `${target}/${entry.name}`);
     }

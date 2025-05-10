@@ -1,19 +1,27 @@
 const assert = require('assert');
 const axios = require('axios');
 
+{% if not enableEnv %}
 assert(process.env.DEEPGRAM_API_KEY, 'DEEPGRAM_API_KEY env variable is missing');
+{% endif %}
 
 const service = ({logger, makeService}) => {
   const svc = makeService({path: '/deepgram-s2s'});
+  {% if enableEnv %}
+  const schema = require('../../app.json');
+  {% endif %}
 
   svc.on('session:new', (session, path) => {
+    {% if enableEnv %}
+    const env = mergeEnvVarsWithDefaults(session.env_vars, svc.path, schema);
+    {% endif %}
     session.locals = { ...session.locals,
       transcripts: [],
       logger: logger.child({call_sid: session.call_sid})
     };
     session.locals.logger.info({session, path}, `new incoming call: ${session.call_sid}`);
 
-    const apiKey = process.env.DEEPGRAM_API_KEY;
+    const apiKey = {% if enableEnv %}env.deepgramApiKey{% else %} process.env.DEEPGRAM_API_KEY{% endif %};
     session
       .on('/event', onEvent.bind(null, session))
       .on('/toolCall', onToolCall.bind(null, session))
@@ -42,12 +50,12 @@ const service = ({logger, makeService}) => {
             type: 'SettingsConfiguration',
             agent: {
               listen: {
-                model: 'nova-2'
+                model: {% if enableEnv %}env.sttModel{% else %}'nova-3'{% endif %},
               },
               think: {
-                model: 'gpt-4o-mini',
+                model: {% if enableEnv %}env.llmModel{% else %}'gpt-4o-mini'{% endif %},
                 provider: {
-                  type: 'open_ai'
+                  type: {% if enableEnv %}env.llmProvider{% else %}'open_ai'{% endif %},
                 },
                 instructions: 'Please help the user with their request.',
                 functions: [

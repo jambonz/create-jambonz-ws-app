@@ -1,0 +1,63 @@
+{
+  {% if tts %}
+  "/hello-world": {
+    "text": {
+      "description": "Text to be spoken",
+      "type": "string",
+      "default": "Hi there and welcome to jam bones! Jam bones is the open source platform for telephonu and voice AI.  Looks like you have your system up and running.  Be sure to check out our docs at docs dot jamb bones dot org.  Have a great day!"
+    }
+  }{% if deepgram or openai or streaming %},{% endif %}
+  {% endif %}
+  {% if deepgram %}
+  "/deepgram-s2s": {
+    "deepgramApiKey": {
+      "description": "A valid Deepgram API key to authenticate with Voice Agent",
+      "type": "string",
+      "obscure": true
+    },
+    "sttModel": {
+      "description": "The STT model to use",
+      "type": "string",
+      "default": "nova-3"
+    },
+    "thinkingProvider": {
+      "description": "The LLM provider to use",
+      "type": "string",
+      "default": "open_ai"
+    },
+    "thinkingModel": {
+      "description": "The LLM model to use",
+      "type": "string",
+      "default": "gpt-4o-mini"
+    }
+  }{% if openai or streaming %},{% endif %}
+  {% endif %}
+  {% if openai %}
+  "/openai-s2s": {
+    "openaiApiKey": {
+      "description": "A valid OpenAI API key to authenticate with Realtime Beta",
+      "type": "string",
+      "obscure": true
+    },
+    "openaiModel": {
+      "description": "The OpenAI model to use",
+      "type": "string",
+      "default": "gpt-4o-realtime-preview-2024-12-17"
+    }
+  }{% if streaming %},{% endif %}
+  {% endif %}
+  {% if openai %}
+  "/llm-streaming": {
+    "anthropicApiKey": {
+      "description": "A valid Anthropic API key",
+      "type": "string",
+      "obscure": true
+    },
+    "systemPrompt": {
+      "description": "The system prompt to use",
+      "type": "string",
+      "default": "You are a helpful conversational AI voice bot. Please keep your answers short and to the point; the user will follow up with more questions if needed. Please reply with unadorned text that can be read aloud to the user using a TTS engine"
+    }
+  }
+  {% endif %}
+}
