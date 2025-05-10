@@ -1,6 +1,6 @@
 {
   "name": "create-jambonz-ws-app",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Scaffold a jambonz websocket application",
   "main": "bin/index.js",
   "bin": {
