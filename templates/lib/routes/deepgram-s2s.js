@@ -1,6 +1,5 @@
 const assert = require('assert');
 const axios = require('axios');
-
 {% if not enableEnv %}
 assert(process.env.DEEPGRAM_API_KEY, 'DEEPGRAM_API_KEY env variable is missing');
 {% endif %}
