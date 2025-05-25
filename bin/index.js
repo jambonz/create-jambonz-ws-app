@@ -158,6 +158,9 @@ const spawnCommand = (cmd, args) => {
   if (opts.scenario.includes('llm-streaming') || includeAll) {
     Array.prototype.push.apply(packages, ['@anthropic-ai/sdk']);
   }
+  if (opts.enableEnv) {
+    Array.prototype.push.apply(packages, ['express']);
+  }
 
   console.log('Installing packages...');
   await spawnCommand('npm',
