@@ -21,8 +21,11 @@ app.locals = {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+{% if enableEnv %}
 // Set up environment routes
 app.use('/', require('./lib/env-vars'));
+{% endif %}
+
 
 // Set up WebSocket routes
 require('./lib/routes')({logger, makeService});
