@@ -150,16 +150,13 @@ const spawnCommand = (cmd, args) => {
 
 (async() => {
   renderFolder(`${__dirname}/../templates`, process.cwd());
-  const packages = ['@jambonz/node-client-ws', 'pino'];
+  const packages = ['@jambonz/node-client-ws', 'pino', 'express'];
   const devPackages = ['eslint-plugin-promise', 'eslint'];
   if (opts.scenario.includes('openai-realtime' || 'deepgram-voice-agent') || includeAll) {
     Array.prototype.push.apply(packages, ['axios']);
   }
   if (opts.scenario.includes('llm-streaming') || includeAll) {
     Array.prototype.push.apply(packages, ['@anthropic-ai/sdk']);
-  }
-  if (opts.enableEnv) {
-    Array.prototype.push.apply(packages, ['express']);
   }
 
   console.log('Installing packages...');
