@@ -33,7 +33,7 @@ const service = ({logger, makeService}) => {
       .pause({length: 1})
       .llm({
         vendor: 'openai',
-        model: {% if enableEnv %}env.openaiModel{% else %}'gpt-4o-realtime-preview-2024-12-17'{% endif %},
+        model: {% if enableEnv %}env.openaiModel{% else %}'gpt-realtime-2.1'{% endif %},
         auth: {
           apiKey
         },
@@ -42,19 +42,19 @@ const service = ({logger, makeService}) => {
         toolHook: '/toolCall',
         events: [
           'conversation.item.*',
-          'response.audio_transcript.done',
+          'response.output_audio_transcript.done',
           'input_audio_buffer.committed'
         ],
         llmOptions: {
           response_create: {
-            modalities: ['text', 'audio'],
-            instructions: 'Please assist the user with their request.',
-            voice: 'alloy',
-            output_audio_format: 'pcm16',
-            temperature: 0.8,
+            output_modalities: ['audio'],
+            instructions: 'Greet the caller and ask how you can help.',
             max_output_tokens: 4096,
           },
           session_update: {
+            type: 'realtime',
+            instructions: 'Please assist the user with their request. Always respond in English ' +
+              'unless the caller speaks another language.',
             tools: [
               {
                 name: 'get_weather',
@@ -77,14 +77,21 @@ const service = ({logger, makeService}) => {
               },
             ],
             tool_choice: 'auto',
-            input_audio_transcription: {
-              model: 'whisper-1',
-            },
-            turn_detection: {
-              type: 'server_vad',
-              threshold: 0.8,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 500,
+            audio: {
+              input: {
+                format: {type: 'audio/pcm', rate: 24000},
+                transcription: {model: 'gpt-live-transcribe'},
+                turn_detection: {
+                  type: 'server_vad',
+                  threshold: 0.8,
+                  prefix_padding_ms: 300,
+                  silence_duration_ms: 500,
+                }
+              },
+              output: {
+                format: {type: 'audio/pcm', rate: 24000},
+                voice: 'marin',
+              }
             }
           }
         }
@@ -154,7 +161,7 @@ const onToolCall = async(session, evt) => {
       item: {
         type: 'function_call_output',
         call_id: tool_call_id,
-        output: weather,
+        output: JSON.stringify(weather),
       }
     };
 
@@ -162,7 +169,14 @@ const onToolCall = async(session, evt) => {
 
   } catch (err) {
     logger.info({err}, 'error calling geocoding or weather API');
-    session.sendToolOutput(tool_call_id, {error: err});
+    session.sendToolOutput(tool_call_id, {
+      type: 'conversation.item.create',
+      item: {
+        type: 'function_call_output',
+        call_id: tool_call_id,
+        output: JSON.stringify({error: err.message}),
+      }
+    });
   }
 };
 
