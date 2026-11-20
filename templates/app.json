@@ -36,14 +36,14 @@
   {% if openai %}
   "/openai-s2s": {
     "openaiApiKey": {
-      "description": "A valid OpenAI API key to authenticate with Realtime Beta",
+      "description": "A valid OpenAI API key to authenticate with the Realtime API",
       "type": "string",
       "obscure": true
     },
     "openaiModel": {
       "description": "The OpenAI model to use",
       "type": "string",
-      "default": "gpt-4o-realtime-preview-2024-12-17"
+      "default": "gpt-realtime-2.1"
     }
   }{% if streaming %},{% endif %}
   {% endif %}
